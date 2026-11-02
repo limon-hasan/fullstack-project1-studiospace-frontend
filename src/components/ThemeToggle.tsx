@@ -1,56 +1,32 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Asynchronous macro-task ব্যবহারের ফলে React Compiler-এর synchronous setState এরর আসে না
+    // Asynchronous macro-task diye React 19 Compiler error fix
     const timer = setTimeout(() => {
       setMounted(true);
-
-      const savedTheme = localStorage.getItem("studiospace-theme");
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-
-      if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
-        document.documentElement.classList.add("dark");
-        setIsDark(true);
-      } else {
-        document.documentElement.classList.remove("dark");
-        setIsDark(false);
-      }
     }, 0);
-
     return () => clearTimeout(timer);
   }, []);
 
-  const toggleTheme = () => {
-    const nextDark = !isDark;
-    setIsDark(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("studiospace-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("studiospace-theme", "light");
-    }
-  };
-
-  // Hydration mismatch রোধ করতে মাউন্ট হওয়ার আগ পর্যন্ত ফাঁকা বাটন রাখা
   if (!mounted) {
     return <div className="w-9 h-9" />;
   }
 
+  const isDark = resolvedTheme === "dark";
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label="Toggle Theme"
-      className="relative p-2.5 rounded-full border border-border bg-card hover:bg-accent text-foreground transition-all duration-200 cursor-pointer shadow-xs"
+      className="p-2.5 rounded-full border border-border bg-card hover:bg-accent text-foreground transition-all duration-200 cursor-pointer shadow-xs"
     >
       {isDark ? (
         <Sun className="w-4 h-4 text-amber-400 transition-transform duration-200 hover:rotate-45" />
