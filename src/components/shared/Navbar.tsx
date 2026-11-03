@@ -29,7 +29,6 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, []);
 
-  
   // ২. Theme Toggle Function (Real DOM + localStorage)
   const toggleTheme = () => {
     const root = document.documentElement;
@@ -76,8 +75,8 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2 font-bold text-lg tracking-tight"
           >
-            <div className="w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center">
-              <Aperture className="w-5 h-5 text-primary" />
+            <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center shadow-xs">
+              <Aperture className="w-5 h-5 text-background" />
             </div>
             <span className="text-foreground">
               StudioSpace

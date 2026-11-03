@@ -1,161 +1,176 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import {
   ArrowRight,
-  Sparkles,
-  Building2,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
-  Layers,
+  Sparkles,
+  Clapperboard,
 } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import type { Swiper as SwiperType } from "swiper";
-import { Autoplay, EffectFade } from "swiper/modules";
 
+// Swiper CSS Styles
 import "swiper/css";
 import "swiper/css/effect-fade";
 
 const SLIDES = [
   {
     id: 1,
-    tag: "Film & Photo Production",
-    badge: "1,400 sq.ft • Motorized Cyc Wall",
-    headline: "Architectural Cycloramas & Production Stages",
-    subtext:
+    category: "Film & Photo Production",
+    specs: "1,400 sq.ft • Motorized Cyc Wall",
+    title: "Architectural Cycloramas & Production Stages",
+    description:
       "Daylight-flooded infinity coves, motorized overhead grids, and 3-phase power drops engineered for commercial cinema sets.",
+    price: "From $85/hr",
+    badge: "Verified Host Guarantee",
+    categoryTab: "01 Film",
     image:
-      "https://images.unsplash.com/photo-1527011046414-4781f1f94f8c?q=80&w=1600&auto=format&fit=crop",
-    exploreHref: "/studios?category=sound-stage",
-    hourlyRate: "$85/hr",
+      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1920",
   },
   {
     id: 2,
-    tag: "Audio & Mastering Suite",
-    badge: "Dolby Atmos 7.1.4 • Vintage Neve Desk",
-    headline: "Acoustically Tuned Dolby Atmos Suites",
-    subtext:
-      "Precision-treated control rooms with vintage analog channel strips, outboard tube compressors, and calibrated reference monitoring.",
+    category: "Acoustic Audio & Recording",
+    specs: "850 sq.ft • SSL Console & Vocal Booth",
+    title: "World-Class Analog Suites & Tracking Rooms",
+    description:
+      "Tuned acoustic spaces equipped with vintage outboard preamps, isolated live rooms, and reference monitoring for pristine audio capture.",
+    price: "From $110/hr",
+    badge: "Acoustically Certified",
+    categoryTab: "02 Audio",
     image:
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=1600&auto=format&fit=crop",
-    exploreHref: "/studios?category=music",
-    hourlyRate: "$65/hr",
+      "https://images.unsplash.com/photo-1598653222000-6b7b7a552625?q=80&w=1920",
   },
   {
     id: 3,
-    tag: "Live Broadcast & Podcast",
-    badge: "4K Blackmagic Switcher • 4x Shure SM7B",
-    headline: "Broadcast-Ready Creator Lounges",
-    subtext:
-      "Multi-mic acoustic sound lounges with automated lighting scenes, dedicated switchers, and zero-latency audio interfaces.",
+    category: "Broadcast & Live Production",
+    specs: "1,100 sq.ft • 4K Multi-Cam Switcher",
+    title: "Multi-Cam Broadcast & Virtual Streaming Sets",
+    description:
+      "Low-latency gigabit fiber connectivity, robotic PTZ camera arrays, and custom RGB lighting matrices built for premium live broadcasts.",
+    price: "From $95/hr",
+    badge: "Gigabit Fiber Ready",
+    categoryTab: "03 Live",
     image:
-      "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=1600&auto=format&fit=crop",
-    exploreHref: "/studios?category=podcast",
-    hourlyRate: "$50/hr",
+      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1920",
   },
 ];
 
 export default function HeroSlider() {
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const swiperRef = useRef<SwiperType | null>(null);
+
+  // ব্রাউজারে মাউন্ট হওয়ার পর Swiper লোড নিশ্চিত করা (Asynchronous microtask দিয়ে cascading render সমাধান)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // SSR / Prerender এর সময় ক্লিন স্কেলিটন স্টেট
+  if (!isMounted) {
+    return (
+      <section className="relative w-full h-[540px] sm:h-[620px] bg-background border-b border-border/60 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </section>
+    );
+  }
 
   return (
-    <section className="relative w-full overflow-hidden bg-background">
+    <section className="relative w-full overflow-hidden bg-background border-b border-border/60">
       <Swiper
         modules={[Autoplay, EffectFade]}
         effect="fade"
         speed={900}
         autoplay={{
-          delay: 6000,
+          delay: 5500,
           disableOnInteraction: false,
-          pauseOnMouseEnter: true,
         }}
         loop={true}
-        observer={true}
-        observeParents={true}
         onSwiper={(swiper) => {
-          setSwiperInstance(swiper);
-          setActiveIndex(swiper.realIndex);
+          swiperRef.current = swiper;
         }}
         onSlideChange={(swiper) => {
           setActiveIndex(swiper.realIndex);
         }}
-        className="hero-swiper h-[560px] sm:h-[620px] w-full"
+        className="w-full h-[540px] sm:h-[620px]"
       >
-        {SLIDES.map((slide, index) => (
+        {SLIDES.map((slide, idx) => (
           <SwiperSlide
             key={slide.id}
             className="relative w-full h-full select-none"
           >
-            {/* 1. Full-Width Background Image with Clean Cinematic Overlay */}
+            {/* Background Image with Pure Dark Cinematic Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
                 src={slide.image}
-                alt={slide.headline}
+                alt={slide.title}
                 fill
-                priority={index === 0}
-                unoptimized
-                className="object-cover brightness-[0.6] scale-105 transition-transform duration-1000 ease-out"
+                priority={idx === 0}
+                className="object-cover object-center scale-105 transition-transform duration-[6000ms] ease-out"
               />
-              {/* লেফট টু রাইট ও বটম গ্রেডিয়েন্ট যা টেক্সট ক্লিয়ার রাখে */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent z-1" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/20 z-1" />
+              {/* লাইট এবং ডার্ক উভয় মোডেই ছবি ক্রিস্প রাখার জন্য পিওর ডার্ক গ্র্যাডিয়েন্ট */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/35" />
             </div>
 
-            {/* 2. Slide Content - Aligned to max-w-6xl */}
-            <div className="relative z-10 max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-start text-left">
+            {/* Slide Content */}
+            <div className="relative z-10 max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
               <div className="max-w-2xl space-y-4 sm:space-y-5">
-                {/* Micro-Spec Badges */}
+                {/* Meta Badges */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 bg-white/10 backdrop-blur-md text-white text-xs font-semibold tracking-wide">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                    <span>{slide.tag}</span>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/30 bg-primary/20 text-white text-xs font-semibold backdrop-blur-md">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{slide.category}</span>
                   </div>
-                  <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/10 bg-black/40 backdrop-blur-md text-slate-300 text-xs">
-                    <Layers className="w-3 h-3 text-slate-400" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 bg-white/10 text-white/90 text-xs font-medium backdrop-blur-md">
+                    <span>{slide.specs}</span>
+                  </div>
+                </div>
+
+                {/* Heading */}
+                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.15]">
+                  {slide.title}
+                </h1>
+
+                {/* Subtitle / Description */}
+                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed max-w-xl font-normal">
+                  {slide.description}
+                </p>
+
+                {/* Price & Guarantee Callouts */}
+                <div className="flex items-center gap-3 pt-1 text-xs">
+                  <span className="font-bold text-white bg-white/15 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                    {slide.price}
+                  </span>
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                    <ShieldCheck className="w-4 h-4" />
                     <span>{slide.badge}</span>
                   </div>
                 </div>
 
-                {/* Headline */}
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-[1.12]">
-                  {slide.headline}
-                </h1>
-
-                {/* Subtext */}
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-xl">
-                  {slide.subtext}
-                </p>
-
-                {/* Pricing & Host Highlight */}
-                <div className="flex items-center gap-4 text-xs text-slate-300 pt-1">
-                  <span className="font-semibold text-white bg-white/10 px-2.5 py-1 rounded-md border border-white/10">
-                    From {slide.hourlyRate}
-                  </span>
-                  <span className="flex items-center gap-1 text-emerald-400">
-                    <ShieldCheck className="w-4 h-4" />
-                    Verified Host Guarantee
-                  </span>
-                </div>
-
-                {/* Mandatory CTA Buttons */}
+                {/* Action CTAs */}
                 <div className="flex flex-wrap items-center gap-3 pt-3">
                   <Link
-                    href={slide.exploreHref}
-                    className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-slate-100 transition-all shadow-md hover:shadow-lg cursor-pointer"
+                    href="/studios"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-md"
                   >
                     <span>Explore Studios</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="w-4 h-4" />
                   </Link>
 
                   <Link
-                    href="/add-studio"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 bg-black/40 backdrop-blur-md text-white font-semibold text-sm hover:bg-white/15 transition-all cursor-pointer"
+                    href="/host"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm transition-all backdrop-blur-md"
                   >
-                    <Building2 className="w-4 h-4 text-slate-300" />
+                    <Clapperboard className="w-4 h-4" />
                     <span>Host Your Space</span>
                   </Link>
                 </div>
@@ -165,47 +180,48 @@ export default function HeroSlider() {
         ))}
       </Swiper>
 
-      {/* 3. Bottom Slide Switcher Tabs & Numeric Counter (Aligned inside max-w-6xl) */}
-      <div className="absolute bottom-5 left-0 right-0 z-20 pointer-events-none">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Interactive Slide Pills */}
-          <div className="hidden md:flex items-center gap-2 pointer-events-auto">
-            {SLIDES.map((slide, idx) => (
+      {/* Bottom Floating Control Bar */}
+      <div className="absolute bottom-6 left-0 right-0 z-20 pointer-events-none">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between pointer-events-auto">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 bg-black/50 backdrop-blur-md p-1 rounded-xl border border-white/15">
+            {SLIDES.map((slide, index) => (
               <button
                 key={slide.id}
-                onClick={() => swiperInstance?.slideToLoop(idx)}
-                className={`text-left px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-2 backdrop-blur-md ${
-                  activeIndex === idx
-                    ? "bg-white/20 text-white font-medium border border-white/25 shadow-xs"
-                    : "bg-black/30 text-slate-400 hover:text-white hover:bg-black/50 border border-white/10"
+                onClick={() => swiperRef.current?.slideToLoop(index)}
+                type="button"
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeIndex === index
+                    ? "bg-white/25 text-white shadow-xs"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
-                <span className="text-[10px] font-mono opacity-60">
-                  0{idx + 1}
-                </span>
-                <span>{slide.tag.split(" ")[0]}</span>
+                {slide.categoryTab}
               </button>
             ))}
           </div>
 
-          {/* Slide Index Progress Counter & Controls */}
-          <div className="flex items-center gap-3 pointer-events-auto ml-auto md:ml-0 bg-black/40 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-xl">
-            <span className="text-xs font-mono text-slate-400">
-              <strong className="text-white">0{activeIndex + 1}</strong> / 0
-              {SLIDES.length}
+          {/* Slide Counter & Arrow Controls */}
+          <div className="flex items-center gap-3 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15">
+            <span className="text-xs font-mono font-bold text-white">
+              0{activeIndex + 1}{" "}
+              <span className="text-zinc-500">/ 0{SLIDES.length}</span>
             </span>
-            <div className="flex items-center gap-1">
+
+            <div className="flex items-center gap-1 border-l border-white/15 pl-2">
               <button
-                onClick={() => swiperInstance?.slidePrev()}
-                aria-label="Previous Slide"
-                className="w-7 h-7 rounded-md border border-white/15 bg-white/10 flex items-center justify-center text-white hover:bg-white/25 transition-all cursor-pointer"
+                onClick={() => swiperRef.current?.slidePrev()}
+                type="button"
+                className="p-1 rounded-md text-zinc-300 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+                aria-label="Previous slide"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
-                onClick={() => swiperInstance?.slideNext()}
-                aria-label="Next Slide"
-                className="w-7 h-7 rounded-md border border-white/15 bg-white/10 flex items-center justify-center text-white hover:bg-white/25 transition-all cursor-pointer"
+                onClick={() => swiperRef.current?.slideNext()}
+                type="button"
+                className="p-1 rounded-md text-zinc-300 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+                aria-label="Next slide"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

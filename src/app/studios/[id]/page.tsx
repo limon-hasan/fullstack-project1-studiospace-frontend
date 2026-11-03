@@ -34,9 +34,27 @@ export default async function StudioDetailsPage({ params }: PageProps) {
     console.error("Error fetching studio details:", error);
   }
 
+  // ডাটাবেজে স্টুডিও না পাওয়া গেলে 404 পেজ ট্রিগার হবে
   if (!studio) {
     notFound();
   }
+
+  const studioTitle =
+    studio.title || studio.name || studio.studioName || "Creative Studio Space";
+  const studioImage =
+    studio.image ||
+    studio.images?.[0] ||
+    studio.coverImage ||
+    "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1200";
+  const hourlyRate =
+    studio.pricePerHour || studio.price || studio.hourlyRate || 75;
+  const dimensions =
+    studio.specs?.dimensions ||
+    studio.dimensions ||
+    studio.size ||
+    "1,200 sq.ft";
+  const capacity = studio.specs?.capacity || studio.capacity || "15 People";
+  const minBooking = studio.specs?.minBooking || studio.minBooking || "2 Hours";
 
   return (
     <div className="min-h-screen bg-background py-10">
@@ -66,24 +84,22 @@ export default async function StudioDetailsPage({ params }: PageProps) {
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-            {studio.name}
+            {studioTitle}
           </h1>
 
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
             <MapPin className="w-4 h-4 text-primary shrink-0" />
-            <span>{studio.location}</span>
+            <span>
+              {studio.location || studio.address || "Location unavailable"}
+            </span>
           </div>
         </div>
 
         {/* Main Image Showcase */}
         <div className="relative w-full h-72 sm:h-96 md:h-[480px] rounded-3xl overflow-hidden border border-border/70 bg-card shadow-sm">
           <Image
-            src={
-              studio.image ||
-              studio.images?.[0] ||
-              "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1200"
-            }
-            alt={studio.name}
+            src={studioImage}
+            alt={studioTitle}
             fill
             priority
             className="object-cover"
@@ -105,7 +121,7 @@ export default async function StudioDetailsPage({ params }: PageProps) {
                     Floor Area
                   </p>
                   <p className="text-sm font-bold text-foreground">
-                    {studio.specs?.dimensions || "1,200 sq.ft"}
+                    {dimensions}
                   </p>
                 </div>
               </div>
@@ -119,7 +135,7 @@ export default async function StudioDetailsPage({ params }: PageProps) {
                     Capacity
                   </p>
                   <p className="text-sm font-bold text-foreground">
-                    {studio.specs?.capacity || "15 People"}
+                    {capacity}
                   </p>
                 </div>
               </div>
@@ -132,7 +148,9 @@ export default async function StudioDetailsPage({ params }: PageProps) {
                   <p className="text-[11px] text-muted-foreground font-medium">
                     Min Booking
                   </p>
-                  <p className="text-sm font-bold text-foreground">2 Hours</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {minBooking}
+                  </p>
                 </div>
               </div>
             </div>
@@ -174,7 +192,7 @@ export default async function StudioDetailsPage({ params }: PageProps) {
             <div className="flex items-baseline justify-between">
               <div>
                 <span className="text-2xl sm:text-3xl font-extrabold text-foreground">
-                  ${studio.pricePerHour || studio.price || 75}
+                  ${hourlyRate}
                 </span>
                 <span className="text-xs text-muted-foreground font-medium">
                   {" "}
