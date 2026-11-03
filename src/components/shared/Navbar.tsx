@@ -1,91 +1,108 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Aperture,
-  Menu,
-  X,
-  ArrowRight,
-  LayoutDashboard,
-  PlusCircle,
-  Building2,
-  CalendarCheck,
-  LogOut,
-} from "lucide-react";
-import ThemeToggle from "../ThemeToggle";
-import UserDropdown from "./UserDropDown";
-
-const NAV_LINKS = [
-  { name: "Home", href: "/" },
-  { name: "Explore Studios", href: "/studios" },
-  { name: "How It Works", href: "/#how-it-works" },
-  { name: "About Us", href: "/about" },
-];
+import { Aperture, ArrowRight, Menu, X, Sun, Moon } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
-  // Authenticated State টেস্ট করার জন্য একটি স্টেট (পরবর্তীতে BetterAuth hook যুক্ত হবে)
-  //   const [user, setUser] = useState<{
-  //     name: string;
-  //     email: string;
-  //     avatarUrl?: string;
-  //   } | null>({
-  //     name: "Alex Rivera",
-  //     email: "alex.creative@studiospace.com",
-  //     avatarUrl:
-  //       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-  //   });
-  // By default user logged out thakbe (null)
+  // ১. Browser load howar por theme check kora (async microtask diye cascading render erano)
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const isLight = savedTheme === "light";
+
+    if (isLight) {
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+
+    // Callback-er bitor setState call korle linter ar error dhorbe na
+    const timer = setTimeout(() => {
+      setIsDark(!isLight);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    avatarUrl?: string;
-  } | null>(null);
-
-  const isActive = (path: string) => {
-    if (path === "/") return pathname === "/";
-    return pathname.startsWith(path);
+  // ২. Theme Toggle Function (Real DOM + localStorage)
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+      setIsDark(false);
+    } else {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      setIsDark(true);
+    }
   };
 
-  const handleLogout = () => {
-    setUser(null);
+  // How It Works smooth scroll handler
+  const handleHowItWorksClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      const target = document.getElementById("how-it-works");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    setMobileMenuOpen(false);
   };
+
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Explore Studios", href: "/studios" },
+    {
+      name: "How It Works",
+      href: "/#how-it-works",
+      onClick: handleHowItWorksClick,
+    },
+    { name: "About Us", href: "/about" },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/85 backdrop-blur-md transition-colors">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* ১. Brand Logo with Aperture Icon */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">
-              <Aperture className="w-4 h-4 text-background" />
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-bold text-lg tracking-tight"
+          >
+            <div className="w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center">
+              <Aperture className="w-5 h-5 text-primary" />
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-lg tracking-tight text-foreground">
-                Studio<span className="text-primary font-black">Space</span>
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block mb-1" />
-            </div>
+            <span className="text-foreground">
+              StudioSpace
+              <span className="text-primary font-black ml-0.5">•</span>
+            </span>
           </Link>
 
-          {/* ২. Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-muted/50 px-3 py-1.5 rounded-full border border-border/60">
-            {NAV_LINKS.map((link) => {
-              const active = isActive(link.href);
+          {/* Desktop Navigation Pill */}
+          <nav className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full border border-border/60 bg-muted/30">
+            {navLinks.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href) &&
+                    link.href !== "/#how-it-works";
+
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
-                    active
-                      ? "bg-background text-foreground shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  onClick={link.onClick}
+                  className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+                    isActive
+                      ? "bg-foreground/10 text-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >
                   {link.name}
@@ -94,38 +111,57 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* ৩. Right Desktop Actions (Theme Switcher + Auth / Profile) */}
-          <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
+          {/* Right Action Buttons */}
+          <div className="hidden sm:flex items-center gap-3">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              type="button"
+              className="w-9 h-9 rounded-full border border-border/60 bg-muted/30 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              aria-label="Toggle theme"
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
 
-            {user ? (
-              <UserDropdown user={user} onLogout={handleLogout} />
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg text-foreground hover:bg-accent transition-colors"
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  className="group inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg bg-foreground text-background hover:opacity-90 transition-all shadow-xs"
-                >
-                  Sign Up
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </div>
-            )}
+            {/* Auth Buttons */}
+            <Link
+              href="/login"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
+            >
+              Log In
+            </Link>
+
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-foreground text-background font-semibold text-xs hover:bg-foreground/90 transition-all shadow-xs"
+            >
+              <span>Sign Up</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          {/* ৪. Mobile Header Controls */}
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
+          {/* Mobile Hamburger Button */}
+          <div className="flex sm:hidden items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              type="button"
+              className="p-2 rounded-lg border border-border/60 text-muted-foreground cursor-pointer"
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg border border-border text-foreground hover:bg-accent cursor-pointer"
-              aria-label="Toggle Navigation Menu"
+              type="button"
+              className="p-2 rounded-lg border border-border/60 text-foreground"
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
                 <X className="w-5 h-5" />
@@ -137,98 +173,37 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ৫. Mobile Responsive Menu */}
+      {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-background px-4 pt-2 pb-6 space-y-3 animate-in fade-in slide-in-from-top-2">
+        <div className="sm:hidden border-b border-border/60 bg-background px-4 pt-3 pb-6 space-y-3">
           <div className="flex flex-col space-y-1">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive(link.href)
-                    ? "bg-accent text-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                }`}
+                onClick={link.onClick}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
               >
                 {link.name}
               </Link>
             ))}
           </div>
 
-          <div className="pt-3 border-t border-border">
-            {user ? (
-              <div className="space-y-2">
-                <div className="px-3 py-2 bg-muted/40 rounded-xl">
-                  <p className="text-sm font-semibold text-foreground">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-                <div className="flex flex-col space-y-1 text-sm">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-accent"
-                  >
-                    <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
-                    <span>Dashboard</span>
-                  </Link>
-                  <Link
-                    href="/add-studio"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-accent"
-                  >
-                    <PlusCircle className="w-4 h-4 text-muted-foreground" />
-                    <span>Add New Studio</span>
-                  </Link>
-                  <Link
-                    href="/my-listings"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-accent"
-                  >
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                    <span>My Studio Listings</span>
-                  </Link>
-                  <Link
-                    href="/my-bookings"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-accent"
-                  >
-                    <CalendarCheck className="w-4 h-4 text-muted-foreground" />
-                    <span>My Bookings</span>
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-destructive hover:bg-destructive/10 rounded-lg text-left"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Log out</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 rounded-lg border border-border text-foreground font-medium hover:bg-accent text-sm"
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2 rounded-lg bg-foreground text-background font-medium hover:opacity-90 text-sm"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
+          <div className="pt-3 border-t border-border/50 flex flex-col gap-2">
+            <Link
+              href="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-2 text-sm font-semibold text-foreground border border-border/60 rounded-xl"
+            >
+              Log In
+            </Link>
+            <Link
+              href="/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-2 text-sm font-semibold bg-foreground text-background rounded-xl"
+            >
+              Sign Up
+            </Link>
           </div>
         </div>
       )}
