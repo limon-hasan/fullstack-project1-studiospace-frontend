@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { Aperture, ArrowRight, Menu, X, Sun, Moon } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,8 +20,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [mobilePopoverOpen, setMobilePopoverOpen] = useState(false);
 
-  // ১. Browser load howar por theme check kora (async microtask diye cascading render erano)
+  // ১. Browser load howar por theme check kora
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const isLight = savedTheme === "light";
@@ -32,7 +34,6 @@ export default function Navbar() {
       document.documentElement.classList.add("dark");
     }
 
-    // Callback-er bitor setState call korle linter ar error dhorbe na
     const timer = setTimeout(() => {
       setIsDark(!isLight);
     }, 0);
@@ -76,14 +77,15 @@ export default function Navbar() {
     },
     { name: "About Us", href: "/about" },
   ];
+
   const { data: session } = authClient.useSession();
   const user = session?.user;
-  console.log("User session: ", user);
 
   const handleSignOut = async () => {
+    setPopoverOpen(false);
+    setMobilePopoverOpen(false);
     await authClient.signOut();
-    // window.location.reload();
-    window.location.href = "/signin";
+    redirect("/signin");
   };
 
   return (
@@ -148,7 +150,7 @@ export default function Navbar() {
 
             {/* User State Toggle */}
             {user ? (
-              <Popover>
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger
                   render={
                     <button className="rounded-full focus:outline-none cursor-pointer">
@@ -165,23 +167,63 @@ export default function Navbar() {
                     </button>
                   }
                 />
-                <PopoverContent align="end" className="w-56 p-4 rounded-2xl">
-                  <PopoverHeader className="space-y-2">
-                    <PopoverTitle className="text-sm font-bold">
+                <PopoverContent
+                  align="end"
+                  className="w-64 p-3 rounded-2xl bg-background border border-border shadow-xl"
+                >
+                  <PopoverHeader className="space-y-1 pb-3 mb-2 border-b border-border/60">
+                    <PopoverTitle className="text-sm font-bold text-foreground">
                       {user?.name}
                     </PopoverTitle>
                     <PopoverDescription className="text-xs text-muted-foreground truncate">
                       {user?.email}
                     </PopoverDescription>
-                    <Button
-                      onClick={handleSignOut}
-                      variant="destructive"
-                      size="sm"
-                      className="w-full mt-2 cursor-pointer text-xs"
-                    >
-                      Sign Out
-                    </Button>
                   </PopoverHeader>
+
+                  {/* Colorful Action Links */}
+                  <div className="flex flex-col gap-1 pb-2 border-b border-border/60">
+                    <Link
+                      href="/add-studio"
+                      onClick={() => setPopoverOpen(false)}
+                      className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-indigo-500/10 hover:text-indigo-600 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-indigo-500/15 text-indigo-600 flex items-center justify-center shrink-0">
+                        +
+                      </div>
+                      <span>Add New Studio</span>
+                    </Link>
+
+                    <Link
+                      href="/my-listings"
+                      onClick={() => setPopoverOpen(false)}
+                      className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0">
+                        🏢
+                      </div>
+                      <span>My Studio Listings</span>
+                    </Link>
+
+                    <Link
+                      href="/my-bookings"
+                      onClick={() => setPopoverOpen(false)}
+                      className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-sky-500/10 hover:text-sky-600 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-sky-500/15 text-sky-600 flex items-center justify-center shrink-0">
+                        📅
+                      </div>
+                      <span>My Bookings</span>
+                    </Link>
+                  </div>
+
+                  <Button
+                    onClick={handleSignOut}
+                    variant="destructive"
+                    size="sm"
+                    className="w-full mt-2 cursor-pointer text-xs font-bold rounded-xl"
+                  >
+                    Sign Out
+                  </Button>
                 </PopoverContent>
               </Popover>
             ) : (
@@ -251,10 +293,13 @@ export default function Navbar() {
 
           <div className="pt-3 border-t border-border/50 flex flex-col gap-2">
             {user ? (
-              <Popover>
+              <Popover
+                open={mobilePopoverOpen}
+                onOpenChange={setMobilePopoverOpen}
+              >
                 <PopoverTrigger
                   render={
-                    <button className="rounded-full focus:outline-none cursor-pointer">
+                    <button className="rounded-full focus:outline-none cursor-pointer flex items-center gap-2 py-1">
                       <Avatar className="w-9 h-9 border border-border/80 shadow-xs">
                         <AvatarImage
                           referrerPolicy="no-referrer"
@@ -265,31 +310,73 @@ export default function Navbar() {
                           {user?.name?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
+                      <span className="text-xs font-semibold text-foreground">
+                        {user?.name}
+                      </span>
                     </button>
                   }
                 />
-                <PopoverContent align="end" className="w-56 p-4 rounded-2xl">
-                  <PopoverHeader className="space-y-2">
-                    <PopoverTitle className="text-sm font-bold">
+                <PopoverContent
+                  align="end"
+                  className="w-64 p-3 rounded-2xl bg-background border border-border shadow-xl"
+                >
+                  <PopoverHeader className="space-y-1 pb-3 mb-2 border-b border-border/60">
+                    <PopoverTitle className="text-sm font-bold text-foreground">
                       {user?.name}
                     </PopoverTitle>
                     <PopoverDescription className="text-xs text-muted-foreground truncate">
                       {user?.email}
                     </PopoverDescription>
-                    <Button
-                      onClick={handleSignOut}
-                      variant="destructive"
-                      size="sm"
-                      className="w-full mt-2 cursor-pointer text-xs"
-                    >
-                      Sign Out
-                    </Button>
                   </PopoverHeader>
+
+                  {/* Colorful Action Links */}
+                  <div className="flex flex-col gap-1 pb-2 border-b border-border/60">
+                    <Link
+                      href="/add-studio"
+                      onClick={() => setPopoverOpen(false)}
+                      className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-indigo-500/10 hover:text-indigo-600 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-indigo-500/15 text-indigo-600 flex items-center justify-center shrink-0">
+                        +
+                      </div>
+                      <span>Add New Studio</span>
+                    </Link>
+
+                    <Link
+                      href="/my-listings"
+                      onClick={() => setPopoverOpen(false)}
+                      className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0">
+                        🏢
+                      </div>
+                      <span>My Studio Listings</span>
+                    </Link>
+
+                    <Link
+                      href="/my-bookings"
+                      onClick={() => setPopoverOpen(false)}
+                      className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-sky-500/10 hover:text-sky-600 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-sky-500/15 text-sky-600 flex items-center justify-center shrink-0">
+                        📅
+                      </div>
+                      <span>My Bookings</span>
+                    </Link>
+                  </div>
+
+                  <Button
+                    onClick={handleSignOut}
+                    variant="destructive"
+                    size="sm"
+                    className="w-full mt-2 cursor-pointer text-xs font-bold rounded-xl"
+                  >
+                    Sign Out
+                  </Button>
                 </PopoverContent>
               </Popover>
             ) : (
               <>
-                {" "}
                 <Link
                   href="/signin"
                   onClick={() => setMobileMenuOpen(false)}

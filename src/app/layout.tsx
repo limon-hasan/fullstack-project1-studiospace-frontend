@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 // ছবির মতো ক্লিন ও প্রফেশনাল টাইপোগ্রাফির জন্য Inter
 const inter = Inter({
@@ -36,6 +37,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <Toaster position="top-right" richColors />
         </ThemeProvider>
       </body>
     </html>
