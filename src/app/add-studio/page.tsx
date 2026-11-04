@@ -27,13 +27,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+// এক্সপ্লোর পেজের ফিল্টার ট্যাবের সাথে হুবহু মেলানো ক্যাটাগরি তালিকা
 const CATEGORIES = [
-  "Photo Studio",
-  "Film Stage",
-  "Podcast Lounge",
-  "Music Suite",
-  "Workshop",
-  "Dance Rehearsal",
+  "Photo Studios",
+  "Sound Stages",
+  "Podcast Rooms",
+  "Music Suites",
+  "Art Workshops",
+  "Dance Studios",
 ];
 
 const AVAILABLE_AMENITIES = [
@@ -90,13 +91,14 @@ export default function AddStudioPage() {
       securityDeposit: Number(securityDeposit || 0),
       maxCapacity: Number(maxCapacity || 1),
       location,
-      imageUrl,
+      image: imageUrl, // shudhu 'image' key thakbe, duplicate imageUrl baad
       amenities,
       description,
       ownerName: user?.name,
       ownerEmail: user?.email,
+      rating: 5.0, // crash thekate default rating
+      reviewsCount: 0, // default review count
     };
-
     try {
       const res = await fetch("http://localhost:8000/add-studio", {
         method: "POST",
@@ -117,6 +119,7 @@ export default function AddStudioPage() {
         description: `"${title}" is now live and ready for bookings.`,
         duration: 4000,
       });
+
       router.push("/my-listings");
     } catch (err: unknown) {
       const errorMsg =

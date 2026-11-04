@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { redirect, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Aperture, ArrowRight, Menu, X, Sun, Moon } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import {
 import { Button } from "../ui/button";
 
 export default function Navbar() {
+  const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
@@ -78,14 +79,15 @@ export default function Navbar() {
     { name: "About Us", href: "/about" },
   ];
 
-  const { data: session } = authClient.useSession();
+  // isPending destructure kora hoyeche session state track korte
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
   const handleSignOut = async () => {
     setPopoverOpen(false);
     setMobilePopoverOpen(false);
     await authClient.signOut();
-    redirect("/signin");
+    router.push("/signin");
   };
 
   return (
@@ -148,8 +150,11 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* User State Toggle */}
-            {user ? (
+            {/* User State with Skeleton Fallback */}
+            {isPending ? (
+              // Session check cholar shomoy neutral pulse skeleton
+              <div className="w-9 h-9 rounded-full bg-muted/60 animate-pulse border border-border/60" />
+            ) : user ? (
               <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger
                   render={
@@ -180,7 +185,7 @@ export default function Navbar() {
                     </PopoverDescription>
                   </PopoverHeader>
 
-                  {/* Colorful Action Links */}
+                  {/* Action Links */}
                   <div className="flex flex-col gap-1 pb-2 border-b border-border/60">
                     <Link
                       href="/add-studio"
@@ -292,7 +297,9 @@ export default function Navbar() {
           </div>
 
           <div className="pt-3 border-t border-border/50 flex flex-col gap-2">
-            {user ? (
+            {isPending ? (
+              <div className="h-10 w-full rounded-xl bg-muted/50 animate-pulse" />
+            ) : user ? (
               <Popover
                 open={mobilePopoverOpen}
                 onOpenChange={setMobilePopoverOpen}
@@ -329,7 +336,6 @@ export default function Navbar() {
                     </PopoverDescription>
                   </PopoverHeader>
 
-                  {/* Colorful Action Links */}
                   <div className="flex flex-col gap-1 pb-2 border-b border-border/60">
                     <Link
                       href="/add-studio"
