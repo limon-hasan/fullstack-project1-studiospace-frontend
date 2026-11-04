@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Aperture, ArrowRight, Menu, X, Sun, Moon } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "../ui/button";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -65,6 +76,15 @@ export default function Navbar() {
     },
     { name: "About Us", href: "/about" },
   ];
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  console.log("User session: ", user);
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    // window.location.reload();
+    window.location.href = "/signin";
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
@@ -126,21 +146,62 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Auth Buttons */}
-            <Link
-              href="/login"
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
-            >
-              Log In
-            </Link>
+            {/* User State Toggle */}
+            {user ? (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button className="rounded-full focus:outline-none cursor-pointer">
+                      <Avatar className="w-9 h-9 border border-border/80 shadow-xs">
+                        <AvatarImage
+                          referrerPolicy="no-referrer"
+                          src={user?.image as string}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                          {user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  }
+                />
+                <PopoverContent align="end" className="w-56 p-4 rounded-2xl">
+                  <PopoverHeader className="space-y-2">
+                    <PopoverTitle className="text-sm font-bold">
+                      {user?.name}
+                    </PopoverTitle>
+                    <PopoverDescription className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </PopoverDescription>
+                    <Button
+                      onClick={handleSignOut}
+                      variant="destructive"
+                      size="sm"
+                      className="w-full mt-2 cursor-pointer text-xs"
+                    >
+                      Sign Out
+                    </Button>
+                  </PopoverHeader>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
+                >
+                  Log In
+                </Link>
 
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-foreground text-background font-semibold text-xs hover:bg-foreground/90 transition-all shadow-xs"
-            >
-              <span>Sign Up</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-foreground text-background font-semibold text-xs hover:bg-foreground/90 transition-all shadow-xs"
+                >
+                  <span>Sign Up</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -189,20 +250,62 @@ export default function Navbar() {
           </div>
 
           <div className="pt-3 border-t border-border/50 flex flex-col gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2 text-sm font-semibold text-foreground border border-border/60 rounded-xl"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2 text-sm font-semibold bg-foreground text-background rounded-xl"
-            >
-              Sign Up
-            </Link>
+            {user ? (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button className="rounded-full focus:outline-none cursor-pointer">
+                      <Avatar className="w-9 h-9 border border-border/80 shadow-xs">
+                        <AvatarImage
+                          referrerPolicy="no-referrer"
+                          src={user?.image as string}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                          {user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  }
+                />
+                <PopoverContent align="end" className="w-56 p-4 rounded-2xl">
+                  <PopoverHeader className="space-y-2">
+                    <PopoverTitle className="text-sm font-bold">
+                      {user?.name}
+                    </PopoverTitle>
+                    <PopoverDescription className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </PopoverDescription>
+                    <Button
+                      onClick={handleSignOut}
+                      variant="destructive"
+                      size="sm"
+                      className="w-full mt-2 cursor-pointer text-xs"
+                    >
+                      Sign Out
+                    </Button>
+                  </PopoverHeader>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <>
+                {" "}
+                <Link
+                  href="/signin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2 text-sm font-semibold text-foreground border border-border/60 rounded-xl"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2 text-sm font-semibold bg-foreground text-background rounded-xl"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
