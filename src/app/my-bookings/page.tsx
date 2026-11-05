@@ -199,10 +199,10 @@ export default function MyBookingsPage() {
             {bookings.map((booking) => (
               <div
                 key={booking._id}
-                className="rounded-3xl bg-background border border-border/80 shadow-md p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-5 hover:border-indigo-500/30 transition-colors"
+                className="rounded-3xl bg-background border border-border/80 shadow-md p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 hover:border-indigo-500/30 transition-colors"
               >
-                {/* Details */}
-                <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 w-full sm:w-auto">
+                {/* বাম পাশের ডিটেইলস সেকশন */}
+                <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
                   <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-muted shrink-0">
                     <Image
                       src={booking.studioImage || "/placeholder.jpg"}
@@ -213,34 +213,34 @@ export default function MyBookingsPage() {
                     />
                   </div>
 
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
+                  <div className="space-y-1.5 min-w-0 flex-1">
+                    {/* ফুল টাইটেল (truncate বাদ দেওয়া হয়েছে) */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground break-words whitespace-normal">
                         {booking.studioTitle}
                       </h3>
                       {renderStatusBadge(booking.status)}
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                       <span className="truncate">{booking.studioLocation}</span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 text-xs text-muted-foreground font-medium">
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1 shrink-0">
                         <CalendarDays className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                         {booking.bookingDate}
                       </span>
 
-                      {/* Start Time - End Time display */}
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1 shrink-0">
                         <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                         {booking.startTime && booking.endTime
                           ? `${formatDisplayTime(booking.startTime)} - ${formatDisplayTime(booking.endTime)} (${booking.durationHours} hrs)`
                           : `${booking.durationHours} hrs`}
                       </span>
 
-                      <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
                         <DollarSign className="w-3.5 h-3.5 stroke-[2.5]" />
                         {booking.totalPrice}
                       </span>
@@ -248,27 +248,26 @@ export default function MyBookingsPage() {
                   </div>
                 </div>
 
-                {/* Action buttons - flex-wrap যোগ করা হয়েছে যেন মোবাইলে বক্সের বাইরে না যায় */}
-                <div className="w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-border/60">
+                {/* ডান পাশের বাটনগুলো (এক লাইনে ফিক্সড থাকবে) */}
+                <div className="w-full md:w-auto flex flex-wrap sm:flex-nowrap items-center justify-start md:justify-end gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-border/60 shrink-0">
                   <Link href={`/studios/${booking.studioId}`}>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 sm:h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-500/30"
+                      className="h-8 sm:h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-500/30 shrink-0 whitespace-nowrap"
                     >
                       <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                       <span>View Studio</span>
                     </Button>
                   </Link>
 
-                  {/* Pending থাকলে Confirm এবং Cancel বাটনগুলো ফ্লেক্স র‍্যাপ হবে */}
                   {booking.status === "Pending" && (
-                    <>
+                    <div className="flex items-center gap-2 shrink-0">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleConfirmBooking(booking._id)}
-                        className="h-8 sm:h-9 rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/30 gap-1.5 cursor-pointer"
+                        className="h-8 sm:h-9 rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/30 gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                         <span>Confirm</span>
@@ -279,7 +278,7 @@ export default function MyBookingsPage() {
                         studioTitle={booking.studioTitle}
                         onCancelSuccess={handleCancelSuccess}
                       />
-                    </>
+                    </div>
                   )}
                 </div>
               </div>

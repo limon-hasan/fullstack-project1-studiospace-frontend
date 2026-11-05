@@ -61,12 +61,12 @@ export default async function StudiosPage({ searchParams }: PageProps) {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/60 pb-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Available Spaces</span>
-                      </div>
-                      <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-                        Explorer All Studios
-                      </h1>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Available Spaces</span>
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+              Explorer All Studios
+            </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
               Browse world-class soundstages, acoustic suites, and daylight
               photography lofts ready for your next production.
