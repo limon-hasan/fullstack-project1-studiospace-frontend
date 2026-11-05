@@ -5,9 +5,12 @@ import StudioCard, { Studio } from "@/components/shared/StudioCard";
 // Backend theke MongoDB-r top 6-ti studio fetch korar function
 async function getFeaturedStudios(): Promise<Studio[]> {
   try {
-    const res = await fetch("http://localhost:8000/featured-studios", {
-      cache: "no-store", // dynamic real-time data fetching
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/featured-studios`,
+      {
+        cache: "no-store", // dynamic real-time data fetching
+      },
+    );
 
     if (!res.ok) {
       throw new Error("Failed to fetch featured studios");
