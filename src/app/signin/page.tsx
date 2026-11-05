@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import {
   Sparkles,
   Mail,
@@ -23,6 +24,9 @@ function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
+
+  // পূর্ববর্তী পেজের URL রিট্রিভ করা (না থাকলে হোমপেজে রিডাইরেক্ট হবে)
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   // Form States
   const [email, setEmail] = useState("");
@@ -50,8 +54,12 @@ function SignInContent() {
         return;
       }
 
-      // Requirement: Success hole Home page-e navigate korbe
-      router.push("/");
+      toast.success("Welcome back!", {
+        description: "You have signed in successfully.",
+      });
+
+      // সাইন-ইনের পর পূর্ববর্তী পেজে রিডাইরেক্ট
+      router.push(callbackUrl);
       router.refresh();
     } catch (err: unknown) {
       const errorMsg =
@@ -67,7 +75,7 @@ function SignInContent() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: callbackUrl, // গুগল সাইন-ইন শেষে পূর্ববর্তী পেজে ফেরত যাবে
       });
     } catch (err: unknown) {
       const errorMsg =
@@ -118,7 +126,7 @@ function SignInContent() {
             </div>
           )}
 
-          {/* Social Sign In (Google Only per Requirement) */}
+          {/* Social Sign In (Google) */}
           <button
             type="button"
             onClick={handleGoogleSignIn}
@@ -164,7 +172,6 @@ function SignInContent() {
 
           {/* Form */}
           <form onSubmit={handleSignIn} className="space-y-4">
-            {/* Email Address */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-primary" />
@@ -180,7 +187,6 @@ function SignInContent() {
               />
             </div>
 
-            {/* Password with Forgot Password link */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
@@ -223,7 +229,6 @@ function SignInContent() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={loading}
@@ -255,7 +260,6 @@ function SignInContent() {
           </div>
         </div>
 
-        {/* Terms note */}
         <p className="text-center text-[11px] text-muted-foreground/80 mt-4">
           By signing in, you agree to our Terms of Service & Privacy Policy.
         </p>

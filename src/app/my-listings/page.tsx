@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DeleteStudiosGrid from "@/components/shared/DeleteStudiosGrid";
 
 interface Studio {
   _id: string;
@@ -44,7 +45,6 @@ export default function MyListingsPage() {
       try {
         setLoading(true);
         const res = await fetch(
-          // `http://localhost:8000/my-studios?email=${encodeURIComponent(user.email)}`,
           `http://localhost:8000/my-studios?email=${encodeURIComponent(user.email)}`,
           {
             cache: "no-store",
@@ -64,38 +64,43 @@ export default function MyListingsPage() {
     fetchMyStudios();
   }, [user?.email]);
 
-  // Studio Delete Handler
-  const handleDelete = async (id: string, title: string) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${title}"?`,
-    );
-    if (!confirmDelete) return;
-
-    try {
-      setDeletingId(id);
-      const res = await fetch(`http://localhost:8000/studios/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Failed to delete workspace.");
-
-      setStudios((prev) => prev.filter((s) => s._id !== id));
-
-      toast.success("Studio Deleted", {
-        description: `"${title}" has been successfully removed.`,
-      });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Deletion failed";
-      toast.error("Delete Error", { description: msg });
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
   if (isPending || (loading && user?.email)) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-muted/20 animate-pulse">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Header Skeleton */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-6">
+            <div className="space-y-2">
+              <div className="h-5 w-28 bg-muted rounded-full" />
+              <div className="h-9 w-60 bg-muted rounded-2xl" />
+              <div className="h-4 w-72 bg-muted rounded-lg" />
+            </div>
+            <div className="h-11 w-36 bg-muted rounded-2xl" />
+          </div>
+
+          {/* Studio Cards Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="rounded-3xl bg-background border border-border/80 overflow-hidden flex flex-col justify-between"
+              >
+                <div className="aspect-16/10 w-full bg-muted" />
+                <div className="p-5 space-y-4">
+                  <div className="space-y-2">
+                    <div className="h-3 w-32 bg-muted rounded-md" />
+                    <div className="h-5 w-48 bg-muted rounded-md" />
+                  </div>
+                  <div className="h-12 bg-muted/50 rounded-2xl" />
+                  <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2">
+                    <div className="h-8 flex-1 bg-muted rounded-xl" />
+                    <div className="h-8 w-20 bg-muted rounded-xl" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -227,21 +232,27 @@ export default function MyListingsPage() {
                         <span>View</span>
                       </Button>
                     </Link>
-
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={deletingId === studio._id}
-                      onClick={() => handleDelete(studio._id, studio.title)}
-                      className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer px-3"
+                    <Link
+                      href={`/studios/edit/${studio._id}`}
+                      className="flex-1"
                     >
-                      {deletingId === studio._id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-3.5 h-3.5" />
-                      )}
-                      <span>Delete</span>
-                    </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full rounded-xl text-xs font-semibold gap-1.5 cursor-pointer hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-500/30"
+                      >
+                        <span>Edit</span>
+                      </Button>
+                    </Link>
+                    <DeleteStudiosGrid
+                      studioId={studio._id}
+                      studioTitle={studio.title}
+                      onDeleteSuccess={(deletedId) => {
+                        setStudios((prev) =>
+                          prev.filter((s) => s._id !== deletedId),
+                        );
+                      }}
+                    />
                   </div>
                 </div>
               </div>

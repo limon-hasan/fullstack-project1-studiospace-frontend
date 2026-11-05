@@ -5,6 +5,7 @@ import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+// import { Toaster } from "@/components/ui/sonner";
 
 // ছবির মতো ক্লিন ও প্রফেশনাল টাইপোগ্রাফির জন্য Inter
 const inter = Inter({

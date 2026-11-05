@@ -22,12 +22,14 @@ import {
   AlertCircle,
   Tag,
   Check,
+  UploadCloud,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-// এক্সপ্লোর পেজের ফিল্টার ট্যাবের সাথে হুবহু মেলানো ক্যাটাগরি তালিকা
+// এক্সপ্লোর পেজের ফিল্টার ট্যাবের সাথে মেলানো ক্যাটাগরি তালিকা
 const CATEGORIES = [
   "Photo Studios",
   "Sound Stages",
@@ -68,6 +70,8 @@ export default function AddStudioPage() {
   const [amenities, setAmenities] = useState<string[]>([]);
   const [description, setDescription] = useState("");
 
+  // Loading States
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -79,9 +83,73 @@ export default function AddStudioPage() {
     }
   };
 
+  // Direct ImgBB File Upload Handler
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // File type validation
+    if (!file.type.startsWith("image/")) {
+      toast.error("Invalid file type", {
+        description: "Please upload an image file (PNG, JPG, WEBP).",
+      });
+      return;
+    }
+
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    if (!apiKey) {
+      toast.error("ImgBB API Key Missing", {
+        description:
+          "Please configure NEXT_PUBLIC_IMGBB_API_KEY in your .env.local file.",
+      });
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.data?.display_url) {
+        setImageUrl(data.data.display_url);
+        toast.success("Image Uploaded Successfully", {
+          description: "Studio image hosted via ImgBB.",
+        });
+      } else {
+        throw new Error(
+          data.error?.message || "Failed to upload image to ImgBB.",
+        );
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Image upload failed";
+      console.error("ImgBB upload error:", err);
+      toast.error("Upload Error", { description: msg });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!imageUrl) {
+      setError("Please upload a studio image before submitting.");
+      toast.error("Image Missing", {
+        description: "Please upload an image for your studio.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const studioPayload = {
@@ -90,15 +158,15 @@ export default function AddStudioPage() {
       hourlyRate: Number(hourlyRate),
       securityDeposit: Number(securityDeposit || 0),
       maxCapacity: Number(maxCapacity || 1),
+      rating: 5.0,
       location,
-      image: imageUrl, // shudhu 'image' key thakbe, duplicate imageUrl baad
+      image: imageUrl,
       amenities,
       description,
       ownerName: user?.name,
       ownerEmail: user?.email,
-      rating: 5.0, // crash thekate default rating
-      reviewsCount: 0, // default review count
     };
+
     try {
       const res = await fetch("http://localhost:8000/add-studio", {
         method: "POST",
@@ -111,9 +179,6 @@ export default function AddStudioPage() {
       if (!res.ok) {
         throw new Error("Failed to add studio workspace.");
       }
-
-      const result = await res.json();
-      console.log("Data received in Frontend from Backend:", result);
 
       toast.success("Studio Workspace Published!", {
         description: `"${title}" is now live and ready for bookings.`,
@@ -163,7 +228,7 @@ export default function AddStudioPage() {
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-muted/20">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header with Colorful Badge */}
+        {/* Header */}
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
             <Sparkles className="w-3.5 h-3.5" />
@@ -338,7 +403,7 @@ export default function AddStudioPage() {
             </div>
           </div>
 
-          {/* Section 3: Media & Amenities */}
+          {/* Section 3: Media & Amenities (ImgBB Integration) */}
           <div className="p-6 sm:p-8 rounded-3xl bg-background border border-border/80 shadow-md space-y-6">
             <div className="flex items-center gap-3 border-b border-border/60 pb-4">
               <div className="w-10 h-10 rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center border border-violet-500/20">
@@ -349,41 +414,86 @@ export default function AddStudioPage() {
                   Media & Workspace Amenities
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Visual showcase and available production equipment
+                  Upload studio cover image (via ImgBB) and choose equipment
                 </p>
               </div>
             </div>
 
-            {/* Image URL Input */}
-            <div className="space-y-2">
+            {/* ImgBB Direct File Upload Dropzone */}
+            <div className="space-y-3">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Studio Image URL (imgbb / postimages)
+                Studio Image (ImgBB Upload)
               </label>
-              <Input
-                type="url"
-                required
-                placeholder="https://images.unsplash.com/photo-..."
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="h-11 bg-muted/30 border-border/80 focus:border-violet-500 focus:ring-violet-500/20 font-medium"
-              />
-              {imageUrl && (
-                <div className="relative aspect-16/7 w-full rounded-2xl overflow-hidden border border-border/80 mt-3 shadow-inner bg-muted">
+
+              {!imageUrl ? (
+                <label className="border-2 border-dashed border-border/80 hover:border-violet-500/60 rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center gap-3 bg-muted/20 hover:bg-muted/40 transition-colors cursor-pointer group">
+                  <div className="w-12 h-12 rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {uploadingImage ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <UploadCloud className="w-6 h-6" />
+                    )}
+                  </div>
+                  <div className="text-center space-y-1">
+                    <p className="text-sm font-bold text-foreground">
+                      {uploadingImage
+                        ? "Uploading to ImgBB..."
+                        : "Click to upload image file"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Supports PNG, JPG, or WEBP (Direct ImgBB integration)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingImage}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              ) : (
+                <div className="relative aspect-16/8 w-full rounded-3xl overflow-hidden border border-border shadow-md bg-muted">
                   <Image
                     src={imageUrl}
-                    alt="Preview"
+                    alt="Uploaded studio preview"
                     fill
+                    unoptimized
                     className="object-cover"
-                    onError={() =>
-                      setError("Provided Image URL could not be previewed.")
-                    }
                   />
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] font-bold text-emerald-400 border border-white/10">
+                      Uploaded to ImgBB
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl("")}
+                      className="w-8 h-8 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+                      title="Remove and upload different image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )}
+
+              {/* Optional Direct URL Fallback */}
+              <div className="pt-1">
+                <p className="text-[11px] text-muted-foreground font-medium">
+                  Or paste direct hosted image URL:
+                </p>
+                <Input
+                  type="url"
+                  placeholder="https://i.ibb.co/..."
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="mt-1 h-9 text-xs bg-muted/20 border-border/70 font-medium"
+                />
+              </div>
             </div>
 
             {/* Amenities Checkboxes */}
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3 pt-3">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <CheckSquare className="w-3.5 h-3.5 text-violet-500" />
                 <span>Select Amenities</span>
@@ -484,7 +594,7 @@ export default function AddStudioPage() {
           {/* Submit Action Button */}
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || uploadingImage}
             className="w-full h-13 rounded-2xl font-bold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-lg hover:shadow-indigo-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
           >
             {loading ? (
