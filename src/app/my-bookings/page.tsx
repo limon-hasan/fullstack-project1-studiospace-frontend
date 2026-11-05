@@ -172,7 +172,7 @@ export default function MyBookingsPage() {
   return (
     <div className="min-h-screen bg-background pt-2 pb-12 sm:pt-6 sm:pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-5">
-        {/* Header - মোবাইলে অতিরিক্ত স্পেসিং কমানো হয়েছে */}
+        {/* Header */}
         <div className="border-b border-border/60 pb-4 sm:pb-6 space-y-1">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
             <Sparkles className="w-3.5 h-3.5" />
@@ -214,7 +214,7 @@ export default function MyBookingsPage() {
                   </div>
 
                   <div className="space-y-1.5 min-w-0 flex-1">
-                    {/* ফুল টাইটেল (truncate বাদ দেওয়া হয়েছে) */}
+                    {/* সম্পূর্ণ টাইটেল */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm sm:text-base font-bold text-foreground break-words whitespace-normal">
                         {booking.studioTitle}
@@ -233,6 +233,7 @@ export default function MyBookingsPage() {
                         {booking.bookingDate}
                       </span>
 
+                      {/* সঠিক টাইম ডিসপ্লে ফরম্যাট */}
                       <span className="flex items-center gap-1 shrink-0">
                         <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                         {booking.startTime && booking.endTime
@@ -248,7 +249,7 @@ export default function MyBookingsPage() {
                   </div>
                 </div>
 
-                {/* ডান পাশের বাটনগুলো (এক লাইনে ফিক্সড থাকবে) */}
+                {/* ডান পাশের বাটনগুলো */}
                 <div className="w-full md:w-auto flex flex-wrap sm:flex-nowrap items-center justify-start md:justify-end gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-border/60 shrink-0">
                   <Link href={`/studios/${booking.studioId}`}>
                     <Button
