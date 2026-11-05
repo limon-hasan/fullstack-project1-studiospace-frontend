@@ -34,12 +34,15 @@ export default function DeleteStudiosGrid({
     const token = await getTokenFromClient();
     try {
       setIsDeleting(true);
-      const res = await fetch(`http://localhost:8000/studios/${studioId}`, {
-        method: "DELETE",
-        headers: {
-          authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/studios/${studioId}`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         throw new Error("Failed to delete workspace.");

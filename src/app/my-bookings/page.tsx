@@ -61,7 +61,7 @@ export default function MyBookingsPage() {
       try {
         setLoading(true);
         const res = await fetch(
-          `http://localhost:8000/show-bookings?email=${encodeURIComponent(user.email)}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/show-bookings?email=${encodeURIComponent(user.email)}`,
           { cache: "no-store" },
         );
         if (!res.ok) throw new Error("Failed to load your reservations.");
@@ -90,7 +90,7 @@ export default function MyBookingsPage() {
   const handleConfirmBooking = async (bookingId: string) => {
     try {
       const res = await fetch(
-        `http://localhost:8000/my-bookings/${bookingId}/confirm`,
+        `${process.env.NEXT_PUBLIC_API_URL}/my-bookings/${bookingId}/confirm`,
         {
           method: "PATCH",
         },

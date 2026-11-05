@@ -131,14 +131,17 @@ export default function BookingModal({ studio }: BookingModalProps) {
     };
     const token = await getTokenFromClient();
     try {
-      const res = await fetch("http://localhost:8000/add-my-bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/add-my-bookings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(bookingPayload),
         },
-        body: JSON.stringify(bookingPayload),
-      });
+      );
 
       const data = await res.json();
 

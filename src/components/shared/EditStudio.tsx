@@ -78,9 +78,12 @@ export default function EditStudio({ id }: EditStudioProps) {
     const fetchStudioDetails = async () => {
       try {
         setIsFetching(true);
-        const res = await fetch(`http://localhost:8000/studios/${id}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/studios/${id}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!res.ok) {
           throw new Error("Failed to load studio details.");
@@ -193,11 +196,14 @@ export default function EditStudio({ id }: EditStudioProps) {
     };
 
     try {
-      const res = await fetch(`http://localhost:8000/edit-studios/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatePayload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/edit-studios/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        },
+      );
 
       if (!res.ok) {
         throw new Error("Failed to update studio details.");

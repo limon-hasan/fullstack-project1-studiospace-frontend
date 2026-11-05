@@ -219,12 +219,15 @@ export default async function StudioDetailsPage({ params }: PageProps) {
   // const token = await getTokenFromServer();
 
   try {
-    const res = await fetch(`http://localhost:8000/studios/${id}`, {
-      cache: "no-store",
-      // headers: {
-      //   authorization: `Bearer ${token}`,
-      // },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/studios/${id}`,
+      {
+        cache: "no-store",
+        // headers: {
+        //   authorization: `Bearer ${token}`,
+        // },
+      },
+    );
 
     if (res.ok) {
       studio = await res.json();

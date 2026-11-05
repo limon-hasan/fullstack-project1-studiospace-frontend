@@ -45,7 +45,7 @@ export default function MyListingsPage() {
       try {
         setLoading(true);
         const res = await fetch(
-          `http://localhost:8000/my-studios?email=${encodeURIComponent(user.email)}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/my-studios?email=${encodeURIComponent(user.email)}`,
           {
             cache: "no-store",
           },
