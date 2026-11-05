@@ -22,7 +22,7 @@ const CATEGORY_TABS = [
 // ব্যাকএন্ড API থেকে সব স্টুডিও ফেচ করার ফাংশন
 async function getStudios(): Promise<StudioItem[]> {
   try {
-    const res = await fetch("http://localhost:8000/studios", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/studios`, {
       cache: "no-store",
     });
 
