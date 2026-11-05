@@ -169,11 +169,11 @@ export default function MyBookingsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-36 pb-16 px-4 sm:px-6 lg:px-8 bg-muted/20">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background pt-4 pb-12 sm:pt-8 sm:pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="border-b border-border/60 pb-6 space-y-1">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
             My Studio Bookings
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
