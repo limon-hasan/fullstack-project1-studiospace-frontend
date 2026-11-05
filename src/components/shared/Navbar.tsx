@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 export default function Navbar() {
   const router = useRouter();
@@ -83,13 +84,36 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
+  // const handleSignOut = async () => {
+  //   setPopoverOpen(false);
+  //   setMobilePopoverOpen(false);
+  //   await authClient.signOut();
+  //   router.push("/signin");
+  // };
   const handleSignOut = async () => {
-    setPopoverOpen(false);
-    setMobilePopoverOpen(false);
-    await authClient.signOut();
-    router.push("/signin");
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Signed Out", {
+              description: "You have been successfully logged out.",
+            });
+            router.push("/signin");
+            router.refresh();
+          },
+          onError: () => {
+            toast.error("Sign Out Failed", {
+              description: "Something went wrong while signing out.",
+            });
+          },
+        },
+      });
+    } catch (err: unknown) {
+      toast.error("Sign Out Failed", {
+        description: "An unexpected error occurred.",
+      });
+    }
   };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

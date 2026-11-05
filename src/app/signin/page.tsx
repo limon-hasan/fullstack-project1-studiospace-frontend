@@ -43,7 +43,7 @@ function SignInContent() {
     setLoading(true);
 
     try {
-      const { error } = await authClient.signIn.email({
+      const { data, error } = await authClient.signIn.email({
         email,
         password,
       });
@@ -54,7 +54,10 @@ function SignInContent() {
         return;
       }
 
-      toast.success("Welcome back!", {
+      // লগইন হওয়া ইউজারের নাম সংগ্রহ (না পাওয়া গেলে fallback)
+      const userName = data?.user?.name || "Creator";
+
+      toast.success(`Welcome back, ${userName}!`, {
         description: "You have signed in successfully.",
       });
 
