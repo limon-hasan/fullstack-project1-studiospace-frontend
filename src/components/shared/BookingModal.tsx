@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { authClient } from "@/lib/auth-client";
@@ -14,7 +14,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, DollarSign, MapPin, Loader2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  MapPin,
+  Loader2,
+  Timer,
+} from "lucide-react";
 
 interface BookingModalProps {
   studio: {
@@ -33,14 +40,24 @@ export default function BookingModal({ studio }: BookingModalProps) {
 
   const [open, setOpen] = useState(false);
   const [bookingDate, setBookingDate] = useState("");
-  const [durationHours, setDurationHours] = useState(2);
+  const [startTime, setStartTime] = useState("10:00");
+  const [endTime, setEndTime] = useState("14:00");
   const [loading, setLoading] = useState(false);
+
+  // Start Time ebong End Time theke Duration (Hours) hishab kora
+  const durationHours = useMemo(() => {
+    if (!startTime || !endTime) return 0;
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const diffMinutes = endH * 60 + endM - (startH * 60 + startM);
+    const hours = diffMinutes / 60;
+    return hours > 0 ? Number(hours.toFixed(1)) : 0;
+  }, [startTime, endTime]);
 
   // Total price calculation
   const totalPrice =
-    Number(studio.hourlyRate || 0) * Number(durationHours || 1);
+    Number(studio.hourlyRate || 0) * (durationHours > 0 ? durationHours : 1);
 
-  // ব্যবহারকারী লগইন না থাকলে সরাসরি সাইন-ইন পেজে রিডাইরেক্ট করবে
   const handleTriggerClick = (e: React.MouseEvent) => {
     if (!user?.email) {
       e.preventDefault();
@@ -83,7 +100,14 @@ export default function BookingModal({ studio }: BookingModalProps) {
 
     if (!bookingDate) {
       toast.error("Validation Error", {
-        description: "Please select a booking date.",
+        description: "Please select a reservation date.",
+      });
+      return;
+    }
+
+    if (durationHours <= 0) {
+      toast.error("Invalid Time Range", {
+        description: "End time must be later than start time.",
       });
       return;
     }
@@ -98,7 +122,9 @@ export default function BookingModal({ studio }: BookingModalProps) {
       userEmail: user.email,
       userName: user.name || "Anonymous",
       bookingDate,
-      durationHours: Number(durationHours),
+      startTime,
+      endTime,
+      durationHours,
       totalPrice,
       status: "Pending",
     };
@@ -110,12 +136,16 @@ export default function BookingModal({ studio }: BookingModalProps) {
         body: JSON.stringify(bookingPayload),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to reserve the workspace slot.");
+        throw new Error(
+          data.message || "Failed to reserve the workspace slot.",
+        );
       }
 
       toast.success("Reservation Placed!", {
-        description: `Your booking for "${studio.title}" is pending confirmation.`,
+        description: `Your booking for "${studio.title}" (${startTime} - ${endTime}) is pending confirmation.`,
       });
 
       setOpen(false);
@@ -144,7 +174,7 @@ export default function BookingModal({ studio }: BookingModalProps) {
             Reserve Studio Slot
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
-            Choose your date and duration to request this creative space.
+            Choose your date and time window to request this creative space.
           </p>
         </DialogHeader>
 
@@ -194,21 +224,46 @@ export default function BookingModal({ studio }: BookingModalProps) {
             />
           </div>
 
-          {/* Duration in Hours */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              Duration (Hours) *
-            </label>
-            <input
-              type="number"
-              required
-              min={1}
-              max={24}
-              value={durationHours}
-              onChange={(e) => setDurationHours(Number(e.target.value))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            />
+          {/* Start Time and End Time Side-by-Side */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-indigo-500" />
+                Start Time *
+              </label>
+              <input
+                type="time"
+                required
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground [color-scheme:light] dark:[color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                End Time *
+              </label>
+              <input
+                type="time"
+                required
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground [color-scheme:light] dark:[color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              />
+            </div>
+          </div>
+
+          {/* Duration info */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+            <span className="flex items-center gap-1">
+              <Timer className="w-3.5 h-3.5 text-indigo-500" />
+              Total Duration:
+            </span>
+            <span className="font-bold text-foreground">
+              {durationHours > 0 ? `${durationHours} hours` : "Invalid window"}
+            </span>
           </div>
 
           {/* Total Price Summary */}
@@ -234,8 +289,8 @@ export default function BookingModal({ studio }: BookingModalProps) {
             </Button>
             <Button
               type="submit"
-              disabled={loading}
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 cursor-pointer"
+              disabled={loading || durationHours <= 0}
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-5 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <>

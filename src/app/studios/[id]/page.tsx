@@ -218,6 +218,9 @@ export default async function StudioDetailsPage({ params }: PageProps) {
   try {
     const res = await fetch(`http://localhost:8000/studios/${id}`, {
       cache: "no-store",
+      headers: {
+        authorization: "user logged in",
+      },
     });
 
     if (res.ok) {

@@ -14,6 +14,7 @@ import {
   Building2,
   Loader2,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CancelBookingModal from "@/components/shared/CancelBookingModal";
@@ -26,11 +27,25 @@ interface Booking {
   studioLocation: string;
   userEmail: string;
   bookingDate: string;
+  startTime?: string;
+  endTime?: string;
   durationHours: number;
   totalPrice: number;
   status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
   createdAt?: string;
 }
+
+// 24-hour time string ("10:00") কে 12-hour format ("10:00 AM") এ রূপান্তর
+const formatDisplayTime = (timeStr?: string) => {
+  if (!timeStr) return "";
+  const parts = timeStr.split(":");
+  if (parts.length < 2) return timeStr;
+  const h = Number(parts[0]);
+  const m = parts[1];
+  const period = h >= 12 ? "PM" : "AM";
+  const adjustedHour = h % 12 || 12;
+  return `${adjustedHour.toString().padStart(2, "0")}:${m} ${period}`;
+};
 
 export default function MyBookingsPage() {
   const { data: session, isPending } = authClient.useSession();
@@ -70,6 +85,37 @@ export default function MyBookingsPage() {
         item._id === cancelledId ? { ...item, status: "Cancelled" } : item,
       ),
     );
+  };
+
+  const handleConfirmBooking = async (bookingId: string) => {
+    try {
+      const res = await fetch(
+        `http://localhost:8000/my-bookings/${bookingId}/confirm`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to confirm reservation.");
+
+      toast.success("Reservation Confirmed!", {
+        description:
+          "Status is now Confirmed. Collision check will now block this slot.",
+      });
+
+      // পেজ রিলোড ছাড়াই সাথে সাথে UI স্টেট আপডেট
+      setBookings((prev) =>
+        prev.map((item) =>
+          item._id === bookingId ? { ...item, status: "Confirmed" } : item,
+        ),
+      );
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Error confirming booking";
+      toast.error("Action Failed", { description: msg });
+    }
   };
 
   const renderStatusBadge = (status: Booking["status"]) => {
@@ -123,7 +169,7 @@ export default function MyBookingsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-28 pb-16 px-4 sm:px-6 lg:px-8 bg-muted/20">
+    <div className="min-h-screen pt-36 pb-16 px-4 sm:px-6 lg:px-8 bg-muted/20">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <div className="border-b border-border/60 pb-6 space-y-1">
@@ -180,10 +226,15 @@ export default function MyBookingsPage() {
                         <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
                         {booking.bookingDate}
                       </span>
+
+                      {/* Start Time - End Time display */}
                       <span className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-amber-500" />
-                        {booking.durationHours} hrs
+                        {booking.startTime && booking.endTime
+                          ? `${formatDisplayTime(booking.startTime)} - ${formatDisplayTime(booking.endTime)} (${booking.durationHours} hrs)`
+                          : `${booking.durationHours} hrs`}
                       </span>
+
                       <span className="flex items-center font-bold text-emerald-600 dark:text-emerald-400">
                         <DollarSign className="w-3.5 h-3.5 stroke-[2.5]" />
                         {booking.totalPrice}
@@ -205,12 +256,25 @@ export default function MyBookingsPage() {
                     </Button>
                   </Link>
 
+                  {/* Pending থাকলে Confirm এবং Cancel দুটি বাটনই দেখাবে */}
                   {booking.status === "Pending" && (
-                    <CancelBookingModal
-                      bookingId={booking._id}
-                      studioTitle={booking.studioTitle}
-                      onCancelSuccess={handleCancelSuccess}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleConfirmBooking(booking._id)}
+                        className="rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/30 gap-1.5 cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Confirm</span>
+                      </Button>
+
+                      <CancelBookingModal
+                        bookingId={booking._id}
+                        studioTitle={booking.studioTitle}
+                        onCancelSuccess={handleCancelSuccess}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

@@ -14,7 +14,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function Navbar() {
@@ -24,6 +24,9 @@ export default function Navbar() {
   const [isDark, setIsDark] = useState(true);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [mobilePopoverOpen, setMobilePopoverOpen] = useState(false);
+
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
 
   // ১. Browser load howar por theme check kora
   useEffect(() => {
@@ -43,7 +46,18 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, []);
 
-  // ২. Theme Toggle Function (Real DOM + localStorage)
+  // ২. Page redirect ba User login hole popover auto-open thaka bondho kora
+  // ২. Page redirect বা User login হলে popover বন্ধ রাখা
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPopoverOpen(false);
+      setMobilePopoverOpen(false);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [pathname, user?.email]);
+
+  // ৩. Theme Toggle Function (Real DOM + localStorage)
   const toggleTheme = () => {
     const root = document.documentElement;
     if (isDark) {
@@ -80,18 +94,10 @@ export default function Navbar() {
     { name: "About Us", href: "/about" },
   ];
 
-  // isPending destructure kora hoyeche session state track korte
-  const { data: session, isPending } = authClient.useSession();
-  const user = session?.user;
-
-  // const handleSignOut = async () => {
-  //   setPopoverOpen(false);
-  //   setMobilePopoverOpen(false);
-  //   await authClient.signOut();
-  //   router.push("/signin");
-  // };
   const handleSignOut = async () => {
     try {
+      setPopoverOpen(false);
+      setMobilePopoverOpen(false);
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
@@ -108,12 +114,13 @@ export default function Navbar() {
           },
         },
       });
-    } catch (err: unknown) {
+    } catch {
       toast.error("Sign Out Failed", {
         description: "An unexpected error occurred.",
       });
     }
   };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -174,15 +181,17 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* User State with Skeleton Fallback */}
+            {/* User State */}
             {isPending ? (
-              // Session check cholar shomoy neutral pulse skeleton
               <div className="w-9 h-9 rounded-full bg-muted/60 animate-pulse border border-border/60" />
             ) : user ? (
               <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger
                   render={
-                    <button className="rounded-full focus:outline-none cursor-pointer">
+                    <button
+                      type="button"
+                      className="rounded-full outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    >
                       <Avatar className="w-9 h-9 border border-border/80 shadow-xs">
                         <AvatarImage
                           referrerPolicy="no-referrer"
@@ -281,6 +290,7 @@ export default function Navbar() {
               onClick={toggleTheme}
               type="button"
               className="p-2 rounded-lg border border-border/60 text-muted-foreground cursor-pointer"
+              aria-label="Toggle theme"
             >
               {isDark ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -291,7 +301,7 @@ export default function Navbar() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               type="button"
-              className="p-2 rounded-lg border border-border/60 text-foreground"
+              className="p-2 rounded-lg border border-border/60 text-foreground cursor-pointer"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -330,7 +340,10 @@ export default function Navbar() {
               >
                 <PopoverTrigger
                   render={
-                    <button className="rounded-full focus:outline-none cursor-pointer flex items-center gap-2 py-1">
+                    <button
+                      type="button"
+                      className="rounded-full outline-none cursor-pointer flex items-center gap-2 py-1 text-left w-full"
+                    >
                       <Avatar className="w-9 h-9 border border-border/80 shadow-xs">
                         <AvatarImage
                           referrerPolicy="no-referrer"
@@ -348,7 +361,7 @@ export default function Navbar() {
                   }
                 />
                 <PopoverContent
-                  align="end"
+                  align="start"
                   className="w-64 p-3 rounded-2xl bg-background border border-border shadow-xl"
                 >
                   <PopoverHeader className="space-y-1 pb-3 mb-2 border-b border-border/60">
@@ -363,7 +376,10 @@ export default function Navbar() {
                   <div className="flex flex-col gap-1 pb-2 border-b border-border/60">
                     <Link
                       href="/add-studio"
-                      onClick={() => setPopoverOpen(false)}
+                      onClick={() => {
+                        setMobilePopoverOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
                       className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-indigo-500/10 hover:text-indigo-600 transition-colors"
                     >
                       <div className="w-6 h-6 rounded-lg bg-indigo-500/15 text-indigo-600 flex items-center justify-center shrink-0">
@@ -374,7 +390,10 @@ export default function Navbar() {
 
                     <Link
                       href="/my-listings"
-                      onClick={() => setPopoverOpen(false)}
+                      onClick={() => {
+                        setMobilePopoverOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
                       className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-emerald-500/10 hover:text-emerald-600 transition-colors"
                     >
                       <div className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0">
@@ -385,7 +404,10 @@ export default function Navbar() {
 
                     <Link
                       href="/my-bookings"
-                      onClick={() => setPopoverOpen(false)}
+                      onClick={() => {
+                        setMobilePopoverOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
                       className="flex items-center gap-2.5 text-xs font-semibold py-2 px-3 rounded-xl text-foreground hover:bg-sky-500/10 hover:text-sky-600 transition-colors"
                     >
                       <div className="w-6 h-6 rounded-lg bg-sky-500/15 text-sky-600 flex items-center justify-center shrink-0">
