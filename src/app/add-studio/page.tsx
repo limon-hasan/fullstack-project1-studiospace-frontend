@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 // এক্সপ্লোর পেজের ফিল্টার ট্যাবের সাথে মেলানো ক্যাটাগরি তালিকা
 const CATEGORIES = [
@@ -140,6 +141,7 @@ export default function AddStudioPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const token = await getTokenFromClient();
     setError("");
 
     if (!imageUrl) {
@@ -172,12 +174,17 @@ export default function AddStudioPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: `Bearer ${token}`, // ব্যাকটিক ব্যবহার করা হয়েছে
         },
         body: JSON.stringify(studioPayload),
       });
 
+      const responseData = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to add studio workspace.");
+        throw new Error(
+          responseData.message || "Failed to add studio workspace.",
+        );
       }
 
       toast.success("Studio Workspace Published!", {
@@ -193,11 +200,11 @@ export default function AddStudioPage() {
           : "Failed to add studio. Please try again.";
       console.error("Submission failed:", err);
       setError(errorMsg);
+      toast.error("Error", { description: errorMsg });
     } finally {
       setLoading(false);
     }
   };
-
   if (isPending) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">

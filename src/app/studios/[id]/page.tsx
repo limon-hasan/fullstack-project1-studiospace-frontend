@@ -19,6 +19,7 @@ import BookingModal from "@/components/shared/BookingModal";
 import StudioGallery from "@/components/shared/StudioGallery";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -215,12 +216,14 @@ export default async function StudioDetailsPage({ params }: PageProps) {
 
   let studio = null;
 
+  // const token = await getTokenFromServer();
+
   try {
     const res = await fetch(`http://localhost:8000/studios/${id}`, {
       cache: "no-store",
-      headers: {
-        authorization: "user logged in",
-      },
+      // headers: {
+      //   authorization: `Bearer ${token}`,
+      // },
     });
 
     if (res.ok) {

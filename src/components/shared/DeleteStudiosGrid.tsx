@@ -14,6 +14,7 @@ import {
 import { Button } from "../ui/button";
 import { Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 interface DeleteStudiosGridProps {
   studioId: string;
@@ -30,10 +31,14 @@ export default function DeleteStudiosGrid({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
+    const token = await getTokenFromClient();
     try {
       setIsDeleting(true);
       const res = await fetch(`http://localhost:8000/studios/${studioId}`, {
         method: "DELETE",
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
       });
 
       if (!res.ok) {

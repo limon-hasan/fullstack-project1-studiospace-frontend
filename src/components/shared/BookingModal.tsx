@@ -22,6 +22,7 @@ import {
   Loader2,
   Timer,
 } from "lucide-react";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 interface BookingModalProps {
   studio: {
@@ -128,11 +129,14 @@ export default function BookingModal({ studio }: BookingModalProps) {
       totalPrice,
       status: "Pending",
     };
-
+    const token = await getTokenFromClient();
     try {
       const res = await fetch("http://localhost:8000/add-my-bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(bookingPayload),
       });
 
