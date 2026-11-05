@@ -29,8 +29,10 @@ const GUARANTEES = [
 
 export default function HostGuarantee() {
   return (
-    // bg-background/40 er poriborte solid bg-background
-    <section className="py-16 sm:py-20 bg-background border-b border-border/60">
+    <section
+      id="about-us"
+      className="py-16 sm:py-20 bg-background border-b border-border/60 scroll-mt-20"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Banner Container */}
         <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-8 sm:p-12 shadow-xs">

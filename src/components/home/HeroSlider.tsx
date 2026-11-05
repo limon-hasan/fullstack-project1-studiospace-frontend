@@ -158,6 +158,7 @@ export default function HeroSlider() {
 
                 {/* Action CTAs */}
                 <div className="flex flex-wrap items-center gap-3 pt-3">
+                  {/* Explore Studios Link */}
                   <Link
                     href="/studios"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-200 transition-all shadow-md"
@@ -166,8 +167,9 @@ export default function HeroSlider() {
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
+                  {/* Host Your Space -> /add-studio তে রিডাইরেক্ট হবে */}
                   <Link
-                    href="/host"
+                    href="/add-studio"
                     className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm transition-all backdrop-blur-md"
                   >
                     <Clapperboard className="w-4 h-4" />

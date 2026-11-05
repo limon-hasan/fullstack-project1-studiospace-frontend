@@ -47,21 +47,21 @@ export default function HowItWorks() {
         </div>
 
         {/* 3-Step Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 relative">
           {STEPS.map((item, index) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.step}
-                className="relative p-6 sm:p-8 rounded-2xl border border-border/70 bg-card flex flex-col justify-between hover:border-primary/40 transition-colors"
+                className="relative p-6 sm:p-8 rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xs flex flex-col justify-between hover:border-primary/40 hover:bg-card transition-all duration-200 group"
               >
                 <div>
                   {/* Step Number & Icon */}
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-2xl font-black text-primary/80 font-mono tracking-tight">
+                    <span className="text-2xl font-black text-primary/80 font-mono tracking-tight group-hover:text-primary transition-colors">
                       {item.step}
                     </span>
-                    <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                    <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
@@ -75,9 +75,10 @@ export default function HowItWorks() {
                   </p>
                 </div>
 
-                {/* Subtle Step Indicator Accent */}
-                <div className="mt-6 pt-4 border-t border-border/40 text-[11px] font-mono text-muted-foreground">
-                  Phase {index + 1} of 3
+                {/* Step Indicator Accent */}
+                <div className="mt-6 pt-4 border-t border-border/40 text-[11px] font-mono text-muted-foreground flex items-center justify-between">
+                  <span>Phase {index + 1} of 3</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/40" />
                 </div>
               </div>
             );
@@ -88,7 +89,7 @@ export default function HowItWorks() {
         <div className="mt-12 text-center">
           <Link
             href="/studios"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-xs sm:text-sm hover:bg-primary/90 transition-all shadow-md hover:gap-2.5 cursor-pointer"
           >
             <span>Explore All Spaces Now</span>
             <ArrowRight className="w-4 h-4" />

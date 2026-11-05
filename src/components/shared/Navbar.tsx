@@ -28,7 +28,7 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
-  // ১. Browser load howar por theme check kora
+  // ১. ব্রাউজারে থিম চেক করা
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const isLight = savedTheme === "light";
@@ -46,8 +46,7 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, []);
 
-  // ২. Page redirect ba User login hole popover auto-open thaka bondho kora
-  // ২. Page redirect বা User login হলে popover বন্ধ রাখা
+  // ২. পেজ নেভিগেশন বা ইউজারের লগইন হলে পপওভার বন্ধ রাখা
   useEffect(() => {
     const timer = setTimeout(() => {
       setPopoverOpen(false);
@@ -57,7 +56,7 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, [pathname, user?.email]);
 
-  // ৩. Theme Toggle Function (Real DOM + localStorage)
+  // ৩. থিম টগল ফাংশন
   const toggleTheme = () => {
     const root = document.documentElement;
     if (isDark) {
@@ -71,7 +70,7 @@ export default function Navbar() {
     }
   };
 
-  // How It Works smooth scroll handler
+  // How It Works সেকশনে স্মুথ স্ক্রল হ্যান্ডলার
   const handleHowItWorksClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
       e.preventDefault();
@@ -83,15 +82,33 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
+  // About Us সেকশনে স্মুথ স্ক্রল হ্যান্ডলার
+  const handleAboutUsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      const target = document.getElementById("about-us");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    setMobileMenuOpen(false);
+  };
+
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Explore Studios", href: "/studios" },
+    { name: "Home", href: "/", prefetch: true },
+    { name: "Explore Studios", href: "/studios", prefetch: true },
     {
       name: "How It Works",
       href: "/#how-it-works",
       onClick: handleHowItWorksClick,
+      prefetch: false,
     },
-    { name: "About Us", href: "/about" },
+    {
+      name: "About Us",
+      href: "/#about-us",
+      onClick: handleAboutUsClick,
+      prefetch: false,
+    },
   ];
 
   const handleSignOut = async () => {
@@ -145,14 +162,14 @@ export default function Navbar() {
               const isActive =
                 link.href === "/"
                   ? pathname === "/"
-                  : pathname.startsWith(link.href) &&
-                    link.href !== "/#how-it-works";
+                  : !link.href.includes("#") && pathname.startsWith(link.href);
 
               return (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={link.onClick}
+                  prefetch={link.prefetch}
                   className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
                     isActive
                       ? "bg-foreground/10 text-foreground font-bold shadow-xs"
@@ -322,7 +339,13 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                onClick={link.onClick}
+                prefetch={link.prefetch}
+                onClick={(e) => {
+                  if (link.onClick) {
+                    link.onClick(e);
+                  }
+                  setMobileMenuOpen(false);
+                }}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
               >
                 {link.name}
