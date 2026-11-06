@@ -25,6 +25,7 @@ import {
   UploadCloud,
   X,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -154,6 +155,7 @@ export default function AddStudioPage() {
 
     setLoading(true);
 
+    // ownerImage ফিল্ড যুক্ত করা হয়েছে যা ডাটাবেজে স্থায়ীভাবে সেভ থাকবে
     const studioPayload = {
       title,
       category,
@@ -167,6 +169,7 @@ export default function AddStudioPage() {
       description,
       ownerName: user?.name,
       ownerEmail: user?.email,
+      ownerImage: user?.image || "",
     };
 
     try {
@@ -174,7 +177,7 @@ export default function AddStudioPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`, // ব্যাকটিক ব্যবহার করা হয়েছে
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(studioPayload),
       });
@@ -205,6 +208,7 @@ export default function AddStudioPage() {
       setLoading(false);
     }
   };
+
   if (isPending) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -553,7 +557,7 @@ export default function AddStudioPage() {
             </div>
           </div>
 
-          {/* Section 4: Read-only Host Information */}
+          {/* Section 4: Read-only Host Information with Live Avatar Preview */}
           <div className="p-6 sm:p-8 rounded-3xl bg-background border border-border/80 shadow-md space-y-5">
             <div className="flex items-center gap-3 border-b border-border/60 pb-4">
               <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
@@ -564,36 +568,49 @@ export default function AddStudioPage() {
                   Host Identity (Read-Only)
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Automatically verified from active login session
+                  Verified and bound to your active profile picture
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Host Name</span>
-                </label>
-                <Input
-                  readOnly
-                  disabled
-                  value={user.name || ""}
-                  className="h-11 bg-muted/60 border-border/60 text-foreground font-semibold cursor-not-allowed opacity-90"
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              <Avatar className="w-14 h-14 border border-border shadow-xs shrink-0">
+                <AvatarImage
+                  referrerPolicy="no-referrer"
+                  src={user.image as string}
+                  className="object-cover"
                 />
-              </div>
+                <AvatarFallback className="bg-primary/10 text-primary font-bold text-base">
+                  {user.name?.charAt(0) || "H"}
+                </AvatarFallback>
+              </Avatar>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Host Email</span>
-                </label>
-                <Input
-                  readOnly
-                  disabled
-                  value={user.email || ""}
-                  className="h-11 bg-muted/60 border-border/60 text-foreground font-semibold cursor-not-allowed opacity-90"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 w-full">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Host Name</span>
+                  </label>
+                  <Input
+                    readOnly
+                    disabled
+                    value={user.name || ""}
+                    className="h-11 bg-muted/60 border-border/60 text-foreground font-semibold cursor-not-allowed opacity-90"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Host Email</span>
+                  </label>
+                  <Input
+                    readOnly
+                    disabled
+                    value={user.email || ""}
+                    className="h-11 bg-muted/60 border-border/60 text-foreground font-semibold cursor-not-allowed opacity-90"
+                  />
+                </div>
               </div>
             </div>
           </div>

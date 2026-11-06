@@ -19,7 +19,6 @@ import BookingModal from "@/components/shared/BookingModal";
 import StudioGallery from "@/components/shared/StudioGallery";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -216,16 +215,11 @@ export default async function StudioDetailsPage({ params }: PageProps) {
 
   let studio = null;
 
-  // const token = await getTokenFromServer();
-
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/studios/${id}`,
       {
         cache: "no-store",
-        // headers: {
-        //   authorization: `Bearer ${token}`,
-        // },
       },
     );
 
@@ -264,12 +258,13 @@ export default async function StudioDetailsPage({ params }: PageProps) {
   const capacity = studio.specs?.capacity || studio.capacity || "15 People";
   const minBooking = studio.specs?.minBooking || studio.minBooking || "2 Hours";
 
-  // Host info
+  // Host info: database-er ownerImage age check korbe, tarpor session fallback
   const hostName =
     studio.ownerName || studio.hostName || "Verified Studio Host";
   const hostEmail = studio.ownerEmail || "host@studiospace.io";
   const hostImage =
     studio.ownerImage ||
+    studio.hostImage ||
     (user?.email === studio?.ownerEmail ? user?.image : null) ||
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300";
 
