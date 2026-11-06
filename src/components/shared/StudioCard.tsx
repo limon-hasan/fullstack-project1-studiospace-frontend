@@ -27,7 +27,7 @@ export default function StudioCard({ studio }: StudioCardProps) {
   const [imgSrc, setImgSrc] = useState(studio.image || FALLBACK_STUDIO_IMAGE);
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-xl hover:border-border transition-all duration-300 active:scale-[0.98] active:border-primary/50 cursor-pointer select-none">
+    <div className="group flex flex-col rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-xl hover:border-border transition-all duration-300">
       {/* ১. Studio Image & Floating Badges */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
         <Image
@@ -36,7 +36,7 @@ export default function StudioCard({ studio }: StudioCardProps) {
           fill
           unoptimized
           onError={() => setImgSrc(FALLBACK_STUDIO_IMAGE)}
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105 group-active:scale-105"
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
 
         {/* Category Badge */}
@@ -68,7 +68,7 @@ export default function StudioCard({ studio }: StudioCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="font-bold text-base sm:text-lg text-foreground tracking-tight line-clamp-1 group-hover:text-primary group-active:text-primary transition-colors">
+          <h3 className="font-bold text-base sm:text-lg text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
             {studio.title}
           </h3>
         </div>
@@ -89,7 +89,7 @@ export default function StudioCard({ studio }: StudioCardProps) {
 
           <Link
             href={`/studios/${studio._id}`}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-foreground text-background font-semibold text-xs hover:bg-foreground/90 active:scale-95 transition-all shadow-xs"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-foreground text-background font-semibold text-xs hover:bg-foreground/90 transition-all shadow-xs"
           >
             <span>View Details</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
