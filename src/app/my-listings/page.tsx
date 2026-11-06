@@ -8,10 +8,8 @@ import { toast } from "sonner";
 import {
   Building2,
   Plus,
-  Trash2,
   ExternalLink,
   MapPin,
-  Loader2,
   AlertCircle,
   Sparkles,
 } from "lucide-react";
@@ -30,14 +28,35 @@ interface Studio {
   ownerEmail: string;
 }
 
+const FALLBACK_STUDIO_IMAGE =
+  "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1000";
+
+// ফলব্যাক হ্যান্ডলিং সহ থাম্বনেইল কম্পোনেন্ট
+function ListingThumbnail({ src, alt }: { src: string; alt: string }) {
+  const [imgSrc, setImgSrc] = useState(src || FALLBACK_STUDIO_IMAGE);
+
+  return (
+    <div className="relative aspect-16/10 w-full overflow-hidden bg-muted">
+      <Image
+        src={imgSrc}
+        alt={alt}
+        fill
+        unoptimized
+        onError={() => setImgSrc(FALLBACK_STUDIO_IMAGE)}
+        className="object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+    </div>
+  );
+}
+
 export default function MyListingsPage() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
   const [studios, setStudios] = useState<Studio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  // User-er nijer studio fetch kora
+
   useEffect(() => {
     if (!user?.email) return;
 
@@ -160,19 +179,12 @@ export default function MyListingsPage() {
                 key={studio._id}
                 className="group rounded-3xl bg-background border border-border/80 shadow-md overflow-hidden flex flex-col justify-between hover:border-indigo-500/40 transition-all duration-300"
               >
-                {/* Image Section */}
-                <div className="relative aspect-16/10 w-full overflow-hidden bg-muted">
-                  <Image
-                    src={studio.image}
-                    alt={studio.title}
-                    fill
-                    unoptimized
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                {/* Image Section with Fallback */}
+                <div className="relative">
+                  <ListingThumbnail src={studio.image} alt={studio.title} />
 
                   {/* Category Badge */}
-                  <div className="absolute top-3 left-3">
+                  <div className="absolute top-3 left-3 z-10">
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-background/90 backdrop-blur-md text-foreground border border-border/60 shadow-xs">
                       {studio.category}
                     </span>

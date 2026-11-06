@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, MapPin, ArrowUpRight } from "lucide-react";
@@ -17,16 +20,22 @@ interface StudioCardProps {
   studio: Studio;
 }
 
+const FALLBACK_STUDIO_IMAGE =
+  "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1000";
+
 export default function StudioCard({ studio }: StudioCardProps) {
+  const [imgSrc, setImgSrc] = useState(studio.image || FALLBACK_STUDIO_IMAGE);
+
   return (
     <div className="group flex flex-col rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-xl hover:border-border transition-all duration-300">
       {/* ১. Studio Image & Floating Badges */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
         <Image
-          src={studio.image}
+          src={imgSrc}
           alt={studio.title}
           fill
           unoptimized
+          onError={() => setImgSrc(FALLBACK_STUDIO_IMAGE)}
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
 
